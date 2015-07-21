@@ -42,6 +42,9 @@ apply plugin: 'osgi'
 group 'org.ros.rosjava_messages'
 version = '%(project_version)s'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 ext {
     generated_sources_directory = "${projectDir}/src/main/java"
 }
