@@ -91,7 +91,7 @@ def populate_project(project_name, project_version, pkg_directory, gradle_projec
             f.close()
 
 
-def create_dependency_string(project_name, msg_package_index):
+def create_dependency_string(project_name, dep_version_prefix, msg_package_index):
     package = msg_package_index[project_name]
     gradle_dependency_string = ""
     for dep in package.build_depends:
@@ -99,7 +99,7 @@ def create_dependency_string(project_name, msg_package_index):
             dependency_package = msg_package_index[dep.name]
         except KeyError:
             continue  # it's not a message package
-        gradle_dependency_string += "  compile 'org.ros.rosjava_messages:" + dependency_package.name + ":" + dependency_package.version + "'\n"
+        gradle_dependency_string += "  compile 'org.ros.rosjava_messages:" + dependency_package.name + ":" + dep_version_prefix + dependency_package.version + "'\n"
     return gradle_dependency_string
 
 
@@ -151,11 +151,16 @@ def create(msg_pkg_name, output_dir):
     if msg_pkg_name not in msg_package_index.keys():
         raise IOError("could not find %s among message packages. Does the that package have a <build_depend> on message_generation in its package.xml?" % msg_pkg_name)
 
-    msg_dependencies = create_dependency_string(msg_pkg_name, msg_package_index)
+    # doesn't work, rospkg.__version__ is 1.0
+    #dep_version_prefix = rospkg.__version__
+    #dep_version_prefix = dep_version_prefix[:dep_version_prefix.rindex('.') + 1]
+    dep_version_prefix = '0.3.'
+
+    msg_dependencies = create_dependency_string(msg_pkg_name, dep_version_prefix, msg_package_index)
 
     create_gradle_wrapper(genjava_gradle_dir)
     pkg_directory = os.path.dirname(msg_package_index[msg_pkg_name].filename)
-    msg_pkg_version = msg_package_index[msg_pkg_name].version
+    msg_pkg_version = dep_version_prefix + msg_package_index[msg_pkg_name].version
     populate_project(msg_pkg_name, msg_pkg_version, pkg_directory, genjava_gradle_dir, msg_dependencies)
 
 
